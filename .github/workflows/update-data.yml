@@ -1,0 +1,79 @@
+name: Update Dhan Scrip Master
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # daily at 3 AM UTC
+  workflow_dispatch:       # manual trigger
+
+# 🔥 REQUIRED FOR PUSH
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Python
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3️⃣ Install dependencies
+      - name: 📦 Install dependencies
+        run: pip install requests
+
+      # 4️⃣ Create data folder
+      - name: 📁 Ensure data folder exists
+        run: mkdir -p data
+
+      # 5️⃣ Download CSV
+      - name: ⬇️ Download CSV
+        run: |
+          curl -L "https://images.dhan.co/api-data/api-scrip-master.csv" \
+          -o data/api-scrip-master.csv
+
+      # 6️⃣ Convert CSV → JSON
+      - name: 🔄 Convert CSV to JSON
+        run: |
+          python <<EOF
+          import csv, json
+
+          csv_path = "data/api-scrip-master.csv"
+          json_path = "data/api-scrip-master.json"
+
+          data = []
+          with open(csv_path, newline='', encoding='utf-8') as f:
+              reader = csv.DictReader(f)
+              for row in reader:
+                  data.append(row)
+
+          with open(json_path, "w", encoding="utf-8") as f:
+              json.dump(data, f, indent=2)
+
+          print("✅ Converted CSV → JSON")
+          EOF
+
+      # 7️⃣ Commit only if changes exist
+      - name: 🔍 Check for changes
+        id: git-check
+        run: |
+          git diff --quiet || echo "changed=true" >> $GITHUB_OUTPUT
+
+      # 8️⃣ Commit & push
+      - name: 🔄 Commit & Push
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+          git add data/api-scrip-master.csv
+          git add data/api-scrip-master.json
+
+          git commit -m "Auto update Dhan scrip master data"
+          git push
