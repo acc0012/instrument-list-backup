@@ -20,7 +20,7 @@ with open(csv_path, "wb") as f:
 
 print("✅ CSV downloaded")
 
-# Convert CSV → JSON (batched)
+# Convert CSV → JSON (batched only)
 file_index = 1
 current_size = 0
 current_data = []
@@ -38,11 +38,10 @@ with open(csv_path, newline='', encoding='utf-8') as csvfile:
         row_json = json.dumps(row)
         row_size = len(row_json.encode("utf-8"))
 
-        # If adding this row exceeds limit → save current batch
+        # Split into batches (~50MB)
         if current_size + row_size > MAX_FILE_SIZE and current_data:
             save_batch(current_data, file_index)
 
-            # Reset for next batch
             file_index += 1
             current_data = []
             current_size = 0
@@ -50,8 +49,12 @@ with open(csv_path, newline='', encoding='utf-8') as csvfile:
         current_data.append(row)
         current_size += row_size
 
-# Save remaining data
+# Save last batch
 if current_data:
     save_batch(current_data, file_index)
 
 print("🚀 All batches created successfully")
+
+# 🔥 OPTIONAL: remove CSV to save space
+os.remove(csv_path)
+print("🗑️ CSV file removed (only batch JSON kept)")
