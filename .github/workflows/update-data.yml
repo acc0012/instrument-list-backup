@@ -4,8 +4,6 @@ on:
   schedule:
     - cron: "0 3 * * *"   # daily at 3 AM UTC
   workflow_dispatch:
-
-  # 🔥 run when workflow file changes
   push:
     paths:
       - ".github/workflows/update-data.yml"
@@ -42,11 +40,11 @@ jobs:
           curl -L "https://images.dhan.co/api-data/api-scrip-master.csv" \
           -o data/api-scrip-master.csv
 
-      # 6️⃣ Convert CSV → BATCH JSON (NO LARGE FILE)
-      - name: 🔄 Convert CSV to batched JSON
+      # 6️⃣ Convert CSV → FILTERED + BATCHED JSON
+      - name: 🔄 Convert CSV to filtered batched JSON
         run: |
           python <<EOF
-          import csv, json, os
+          import csv, json
 
           csv_path = "data/api-scrip-master.csv"
           MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
@@ -65,7 +63,29 @@ jobs:
               reader = csv.DictReader(f)
 
               for row in reader:
-                  row_json = json.dumps(row)
+                  segment = row.get("SEM_SEGMENT", "")
+                  instrument = row.get("SEM_INSTRUMENT_NAME", "")
+
+                  # 🔥 FILTER: only D (derivatives) + I (index)
+                  if segment not in ["D", "I"]:
+                      continue
+
+                  # 🔥 Only options inside D (skip futures)
+                  if segment == "D" and instrument not in ["OPTIDX", "OPTSTK"]:
+                      continue
+
+                  # 🔥 Reduce size (important)
+                  filtered_row = {
+                      "id": row.get("SEM_SMST_SECURITY_ID"),
+                      "symbol": row.get("SEM_TRADING_SYMBOL"),
+                      "segment": segment,
+                      "instrument": instrument,
+                      "expiry": row.get("SEM_EXPIRY_DATE"),
+                      "strike": row.get("SEM_STRIKE_PRICE"),
+                      "optionType": row.get("SEM_OPTION_TYPE"),
+                  }
+
+                  row_json = json.dumps(filtered_row)
                   row_size = len(row_json.encode("utf-8"))
 
                   if current_size + row_size > MAX_FILE_SIZE and current_data:
@@ -74,16 +94,16 @@ jobs:
                       current_data = []
                       current_size = 0
 
-                  current_data.append(row)
+                  current_data.append(filtered_row)
                   current_size += row_size
 
           if current_data:
               save_batch(current_data, file_index)
 
-          print("✅ Batched JSON created")
+          print("✅ Filtered batched JSON created")
           EOF
 
-      # 7️⃣ Remove CSV (optional but recommended)
+      # 7️⃣ Remove CSV (avoid large file push)
       - name: 🧹 Remove CSV file
         run: rm -f data/api-scrip-master.csv
 
@@ -91,7 +111,7 @@ jobs:
       - name: 🚫 Remove large JSON if exists
         run: rm -f data/api-scrip-master.json
 
-      # 9️⃣ Commit only batch files
+      # 9️⃣ Commit & Push only batch files
       - name: 🔄 Commit & Push
         run: |
           git config --global user.name "github-actions"
@@ -99,6 +119,6 @@ jobs:
 
           git add data/api-scrip-master-*.json
 
-          git diff --cached --quiet || git commit -m "Auto update batched data"
+          git diff --cached --quiet || git commit -m "Auto update filtered batched data"
 
           git push
