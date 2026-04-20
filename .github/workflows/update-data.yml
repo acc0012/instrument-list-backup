@@ -3,9 +3,8 @@ name: Update Dhan Scrip Master
 on:
   schedule:
     - cron: "0 3 * * *"   # daily at 3 AM UTC
-  workflow_dispatch:       # manual trigger
+  workflow_dispatch:
 
-# 🔥 REQUIRED FOR PUSH
 permissions:
   contents: write
 
@@ -28,8 +27,8 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install requests
 
-      # 4️⃣ Create data folder
-      - name: 📁 Ensure data folder exists
+      # 4️⃣ Ensure data folder exists
+      - name: 📁 Create data folder
         run: mkdir -p data
 
       # 5️⃣ Download CSV
@@ -59,21 +58,15 @@ jobs:
           print("✅ Converted CSV → JSON")
           EOF
 
-      # 7️⃣ Commit only if changes exist
-      - name: 🔍 Check for changes
-        id: git-check
-        run: |
-          git diff --quiet || echo "changed=true" >> $GITHUB_OUTPUT
-
-      # 8️⃣ Commit & push
+      # 7️⃣ Commit & push (handles first run + updates)
       - name: 🔄 Commit & Push
-        if: steps.git-check.outputs.changed == 'true'
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git add data/api-scrip-master.csv
-          git add data/api-scrip-master.json
+          git add .
 
-          git commit -m "Auto update Dhan scrip master data"
+          # Only commit if there are changes
+          git diff --cached --quiet || git commit -m "Auto update Dhan data"
+
           git push
