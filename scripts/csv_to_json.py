@@ -7,7 +7,7 @@ URL = "https://images.dhan.co/api-data/api-scrip-master.csv"
 
 # Ensure folder exists
 os.makedirs("data", exist_ok=True)
-
+ 
 csv_path = "data/api-scrip-master.csv"
 json_path = "data/api-scrip-master.json"
 
