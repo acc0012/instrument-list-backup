@@ -20,7 +20,7 @@ with open(csv_path, "wb") as f:
 
 print("✅ CSV downloaded")
 
-# Convert CSV → JSON (batched only)
+# Convert CSV → JSON (batched + filtered)
 file_index = 1
 current_size = 0
 current_data = []
@@ -31,11 +31,34 @@ def save_batch(data, index):
         json.dump(data, f)
     print(f"✅ Saved {file_path} ({len(data)} records)")
 
+
 with open(csv_path, newline='', encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
 
     for row in reader:
-        row_json = json.dumps(row)
+        segment = row.get("SEM_SEGMENT", "")
+        instrument = row.get("SEM_INSTRUMENT_NAME", "")
+
+        # 🔥 MAIN FILTER → only D (derivatives) + I (index)
+        if segment not in ["D", "I"]:
+            continue
+
+        # 🔥 OPTIONAL: keep only OPTIONS inside D (skip futures)
+        if segment == "D" and instrument not in ["OPTIDX", "OPTSTK"]:
+            continue
+
+        # 🔥 OPTIONAL: reduce fields (recommended for size)
+        filtered_row = {
+            "id": row.get("SEM_SMST_SECURITY_ID"),
+            "symbol": row.get("SEM_TRADING_SYMBOL"),
+            "segment": segment,
+            "instrument": instrument,
+            "expiry": row.get("SEM_EXPIRY_DATE"),
+            "strike": row.get("SEM_STRIKE_PRICE"),
+            "optionType": row.get("SEM_OPTION_TYPE"),
+        }
+
+        row_json = json.dumps(filtered_row)
         row_size = len(row_json.encode("utf-8"))
 
         # Split into batches (~50MB)
@@ -46,8 +69,9 @@ with open(csv_path, newline='', encoding='utf-8') as csvfile:
             current_data = []
             current_size = 0
 
-        current_data.append(row)
+        current_data.append(filtered_row)
         current_size += row_size
+
 
 # Save last batch
 if current_data:
@@ -55,6 +79,6 @@ if current_data:
 
 print("🚀 All batches created successfully")
 
-# 🔥 OPTIONAL: remove CSV to save space
+# 🔥 Remove CSV (to avoid pushing large file)
 os.remove(csv_path)
 print("🗑️ CSV file removed (only batch JSON kept)")
