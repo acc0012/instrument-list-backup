@@ -34,6 +34,10 @@ jobs:
       - name: 📁 Create data folder
         run: mkdir -p data
 
+      # 🔥 NEW STEP HERE
+      - name: 🧹 Remove old batch files
+        run: rm -f data/api-scrip-master-*.json
+
       # 5️⃣ Download CSV
       - name: ⬇️ Download CSV
         run: |
