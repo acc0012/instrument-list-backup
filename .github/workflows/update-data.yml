@@ -30,13 +30,12 @@ jobs:
       - name: 📦 Install dependencies
         run: pip install requests
 
-      # 4️⃣ Create data folder
-      - name: 📁 Create data folder
-        run: mkdir -p data
+      - name: 🧹 Reset data folder
+        run: |
+          rm -rf data
+          mkdir -p data
 
-      # 🔥 NEW STEP HERE
-      - name: 🧹 Remove old batch files
-        run: rm -f data/api-scrip-master-*.json
+
 
       # 5️⃣ Download CSV
       - name: ⬇️ Download CSV
@@ -121,8 +120,8 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
 
-          git add data/api-scrip-master-*.json
-
+          git add data/
+          
           git diff --cached --quiet || git commit -m "Auto update filtered batched data"
 
           git push
