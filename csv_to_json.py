@@ -19,6 +19,18 @@ print("✅ CSV downloaded")
 nifty_data = []
 sensex_data = []
 
+# 🔥 NEW: batching setup
+MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+file_index = 1
+current_size = 0
+current_data = []
+
+def save_batch(data, index):
+    path = f"data/api-scrip-master-{index}.json"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+    print(f"✅ Saved batch {index} ({len(data)} records)")
+
 with open(csv_path, newline='', encoding='utf-8') as csvfile:
     reader = csv.DictReader(csvfile)
 
@@ -44,15 +56,32 @@ with open(csv_path, newline='', encoding='utf-8') as csvfile:
             "optionType": row.get("SEM_OPTION_TYPE"),
         }
 
-        # 🔥 SPLIT LOGIC
+        # 🔥 EXISTING SPLIT LOGIC (unchanged)
         if symbol.startswith("NIFTY"):
             nifty_data.append(filtered_row)
 
         elif symbol.startswith("SENSEX"):
             sensex_data.append(filtered_row)
 
+        # 🔥 NEW: batching logic
+        row_json = json.dumps(filtered_row)
+        row_size = len(row_json.encode("utf-8"))
 
-# Save files
+        if current_size + row_size > MAX_FILE_SIZE and current_data:
+            save_batch(current_data, file_index)
+            file_index += 1
+            current_data = []
+            current_size = 0
+
+        current_data.append(filtered_row)
+        current_size += row_size
+
+
+# Save last batch
+if current_data:
+    save_batch(current_data, file_index)
+
+# Save split files (unchanged)
 with open("data/nifty.json", "w", encoding="utf-8") as f:
     json.dump(nifty_data, f, indent=4)
 
