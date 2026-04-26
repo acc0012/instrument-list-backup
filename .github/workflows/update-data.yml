@@ -2,7 +2,7 @@ name: Update Dhan Scrip Master
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # daily at 3 AM UTC
+    - cron: "30 20 * * *"
   workflow_dispatch:
   push:
     paths:
