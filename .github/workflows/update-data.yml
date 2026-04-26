@@ -35,8 +35,6 @@ jobs:
           rm -rf data
           mkdir -p data
 
-
-
       # 5️⃣ Download CSV
       - name: ⬇️ Download CSV
         run: |
@@ -48,36 +46,25 @@ jobs:
         run: |
           python <<EOF
           import csv, json
-
           csv_path = "data/api-scrip-master.csv"
           MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-
           file_index = 1
           current_size = 0
           current_data = []
-
           def save_batch(data, index):
               path = f"data/api-scrip-master-{index}.json"
               with open(path, "w", encoding="utf-8") as f:
                   json.dump(data, f)
               print(f"Saved {path} with {len(data)} rows")
-
           with open(csv_path, newline='', encoding='utf-8') as f:
               reader = csv.DictReader(f)
-
               for row in reader:
                   segment = row.get("SEM_SEGMENT", "")
                   instrument = row.get("SEM_INSTRUMENT_NAME", "")
-
-                  # 🔥 FILTER: only D (derivatives) + I (index)
                   if segment not in ["D", "I"]:
                       continue
-
-                  # 🔥 Only options inside D (skip futures)
                   if segment == "D" and instrument not in ["OPTIDX", "OPTSTK"]:
                       continue
-
-                  # 🔥 Reduce size (important)
                   filtered_row = {
                       "id": row.get("SEM_SMST_SECURITY_ID"),
                       "symbol": row.get("SEM_TRADING_SYMBOL"),
@@ -87,22 +74,17 @@ jobs:
                       "strike": row.get("SEM_STRIKE_PRICE"),
                       "optionType": row.get("SEM_OPTION_TYPE"),
                   }
-
                   row_json = json.dumps(filtered_row)
                   row_size = len(row_json.encode("utf-8"))
-
                   if current_size + row_size > MAX_FILE_SIZE and current_data:
                       save_batch(current_data, file_index)
                       file_index += 1
                       current_data = []
                       current_size = 0
-
                   current_data.append(filtered_row)
                   current_size += row_size
-
           if current_data:
               save_batch(current_data, file_index)
-
           print("✅ Filtered batched JSON created")
           EOF
 
@@ -114,14 +96,16 @@ jobs:
       - name: 🚫 Remove large JSON if exists
         run: rm -f data/api-scrip-master.json
 
+      # 🔥 NEW: Force change every run (SAFE)
+      - name: 🕒 Add timestamp file
+        run: echo "Updated at $(date)" > data/last_updated.txt
+
       # 9️⃣ Commit & Push only batch files
       - name: 🔄 Commit & Push
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-
           git add data/
           
           git diff --cached --quiet || git commit -m "Auto update filtered batched data"
-
           git push
