@@ -28,7 +28,7 @@ current_data = []
 def save_batch(data, index):
     file_path = f"data/api-scrip-master-{index}.json"
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(data, f)
+        json.dump(data, f,indent=4)
     print(f"✅ Saved {file_path} ({len(data)} records)")
 
 
