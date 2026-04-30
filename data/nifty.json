@@ -1,5 +1,23 @@
 [
     {
+        "id": "35022",
+        "symbol": "NIFTY-Jul2026-29300-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29300.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35023",
+        "symbol": "NIFTY-Jul2026-29300-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29300.00000",
+        "optionType": "PE"
+    },
+    {
         "id": "35036",
         "symbol": "NIFTY-May2026-30700-CE",
         "segment": "D",
@@ -36,6 +54,24 @@
         "optionType": "PE"
     },
     {
+        "id": "35040",
+        "symbol": "NIFTY-Jul2026-29350-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29350.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35041",
+        "symbol": "NIFTY-Jul2026-29350-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29350.00000",
+        "optionType": "PE"
+    },
+    {
         "id": "35042",
         "symbol": "NIFTYNXT50-May2026-81900-CE",
         "segment": "D",
@@ -69,6 +105,42 @@
         "instrument": "OPTIDX",
         "expiry": "2026-05-26 14:30:00",
         "strike": "82100.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35056",
+        "symbol": "NIFTY-Jul2026-29400-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29400.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35057",
+        "symbol": "NIFTY-Jul2026-29400-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29400.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35058",
+        "symbol": "NIFTY-Jul2026-29450-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29450.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35059",
+        "symbol": "NIFTY-Jul2026-29450-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "29450.00000",
         "optionType": "PE"
     },
     {
