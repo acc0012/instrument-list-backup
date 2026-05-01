@@ -720,6 +720,186 @@
         "optionType": "PE"
     },
     {
+        "id": "35440",
+        "symbol": "NIFTYNXT50-Jul2026-39500-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "39500.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35441",
+        "symbol": "NIFTYNXT50-Jul2026-39500-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "39500.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35442",
+        "symbol": "NIFTYNXT50-Jul2026-40000-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "40000.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35443",
+        "symbol": "NIFTYNXT50-Jul2026-40000-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "40000.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35444",
+        "symbol": "NIFTYNXT50-Jul2026-57600-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57600.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35445",
+        "symbol": "NIFTYNXT50-Jul2026-57600-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57600.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35456",
+        "symbol": "NIFTYNXT50-Jul2026-57700-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57700.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35457",
+        "symbol": "NIFTYNXT50-Jul2026-57700-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57700.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35470",
+        "symbol": "NIFTYNXT50-Jul2026-57800-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57800.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35471",
+        "symbol": "NIFTYNXT50-Jul2026-57800-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57800.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35486",
+        "symbol": "NIFTYNXT50-Jul2026-57900-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57900.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35487",
+        "symbol": "NIFTYNXT50-Jul2026-57900-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "57900.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35488",
+        "symbol": "NIFTYNXT50-Jul2026-58100-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58100.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35489",
+        "symbol": "NIFTYNXT50-Jul2026-58100-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58100.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35496",
+        "symbol": "NIFTYNXT50-Jul2026-58200-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58200.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35497",
+        "symbol": "NIFTYNXT50-Jul2026-58200-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58200.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35502",
+        "symbol": "NIFTYNXT50-Jul2026-58300-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58300.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35503",
+        "symbol": "NIFTYNXT50-Jul2026-58300-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58300.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "35506",
+        "symbol": "NIFTYNXT50-Jul2026-58400-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58400.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "35507",
+        "symbol": "NIFTYNXT50-Jul2026-58400-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-28 14:30:00",
+        "strike": "58400.00000",
+        "optionType": "PE"
+    },
+    {
         "id": "35575",
         "symbol": "NIFTYNXT50-May2026-82600-CE",
         "segment": "D",
