@@ -36,7 +36,7 @@ def fetch_and_store_option_chain():
         logger.error("❌ No valid Dhan credentials found")
         raise RuntimeError("No valid Dhan credentials")
 
-    dhan = dhanhq(creds["client_id"], creds["access_token"])
+    dhan = dhanhq(creds["access_token"])
     collection = get_market_data_collection()
 
     for sec_id in INDEX_SECURITY_IDS:
