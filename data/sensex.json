@@ -23481,6 +23481,204 @@
         "optionType": "CE"
     },
     {
+        "id": "1152158",
+        "symbol": "SENSEX-Jul2026-84000-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84000.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152187",
+        "symbol": "SENSEX-Jun2026-84200-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84200.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152202",
+        "symbol": "SENSEX50-Jul2026-26250-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26250.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152237",
+        "symbol": "SENSEX-Jun2026-84100-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84100.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152239",
+        "symbol": "SENSEX-Jul2026-84200-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84200.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152313",
+        "symbol": "SENSEX-Jun2026-84300-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84300.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152419",
+        "symbol": "SENSEX50-Jul2026-26200-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26200.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152432",
+        "symbol": "SENSEX-Jul2026-84000-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84000.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152473",
+        "symbol": "SENSEX50-Jul2026-26250-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26250.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152497",
+        "symbol": "SENSEX-Jun2026-84100-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84100.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152501",
+        "symbol": "SENSEX-Jul2026-84200-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84200.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152542",
+        "symbol": "SENSEX-Jun2026-84000-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84000.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152548",
+        "symbol": "SENSEX-Jul2026-84100-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84100.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152576",
+        "symbol": "SENSEX-Jun2026-84300-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84300.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152618",
+        "symbol": "SENSEX-Jun2026-84200-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84200.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152623",
+        "symbol": "SENSEX-Jul2026-84300-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84300.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1152685",
+        "symbol": "SENSEX50-Jul2026-26200-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26200.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152902",
+        "symbol": "SENSEX-Jun2026-84000-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-06-18 15:30:00",
+        "strike": "84000.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1152915",
+        "symbol": "SENSEX-Jul2026-84100-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84100.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1153038",
+        "symbol": "SENSEX-Jul2026-84300-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "84300.00000",
+        "optionType": "PE"
+    },
+    {
+        "id": "1153283",
+        "symbol": "SENSEX50-Jul2026-26150-CE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26150.00000",
+        "optionType": "CE"
+    },
+    {
+        "id": "1153692",
+        "symbol": "SENSEX50-Jul2026-26150-PE",
+        "segment": "D",
+        "instrument": "OPTIDX",
+        "expiry": "2026-07-30 15:30:00",
+        "strike": "26150.00000",
+        "optionType": "PE"
+    },
+    {
         "id": "820163",
         "symbol": "SENSEX-Jun2027-87000-CE",
         "segment": "D",
