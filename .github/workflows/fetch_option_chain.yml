@@ -7,7 +7,7 @@ on:
       - requirements.txt              # optional: also run if deps change
 
   schedule:
-    - cron: "30 11 * * *"
+    - cron: "30 23 * * *"
 
   workflow_dispatch:
 
