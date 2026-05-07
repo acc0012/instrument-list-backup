@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from dhanhq import dhanhq, DhanContext
+from dhanhq import dhanhq
 from dhan_auth import load_valid_dhan_credentials
 from mongo_clients import get_market_data_collection
 
@@ -37,38 +37,46 @@ def parse_response(resp, label="response"):
 
     logger.info(f"📦 {label} TYPE => {type(resp)}")
 
-    # Print small sample only
+    # --------------------------------
+    # PRINT SAMPLE RESPONSE
+    # --------------------------------
     try:
-        sample = str(resp)[:1000]
+        sample = str(resp)[:2000]
         logger.info(f"📦 {label} SAMPLE => {sample}")
     except Exception:
         logger.warning(f"⚠️ Failed printing {label} sample")
 
     # --------------------------------
-    # STRING RESPONSE
+    # HANDLE STRING RESPONSE
     # --------------------------------
     if isinstance(resp, str):
+
         try:
+
             resp = json.loads(resp)
 
             logger.info(
-                f"✅ Converted {label} string response to JSON dict"
+                f"✅ Converted {label} string -> dict"
             )
 
         except Exception:
+
             logger.exception(
                 f"❌ Failed parsing {label} JSON string"
             )
+
             return {}
 
     # --------------------------------
-    # INVALID RESPONSE
+    # VALIDATE TYPE
     # --------------------------------
     if not isinstance(resp, dict):
+
         logger.error(
-            f"❌ {label} is not dict after parsing. "
-            f"TYPE={type(resp)}"
+            f"❌ {label} invalid type after parsing "
+            f"=> {type(resp)}"
         )
+
         return {}
 
     return resp
@@ -87,34 +95,51 @@ def fetch_and_store_option_chain():
     creds = load_valid_dhan_credentials()
 
     if not creds:
+
         logger.error("❌ No valid Dhan credentials found")
-        raise RuntimeError("No valid Dhan credentials")
+
+        raise RuntimeError(
+            "No valid Dhan credentials"
+        )
+
+    logger.info(
+        f"✅ Loaded Dhan credentials "
+        f"client_id={creds.get('client_id')}"
+    )
 
     # --------------------------------
     # INIT DHAN SDK
     # --------------------------------
     try:
 
-        context = DhanContext(
-            client_id=creds["client_id"],
-            access_token=creds["access_token"]
+        dhan = dhanhq(
+            creds["client_id"],
+            creds["access_token"]
         )
 
-        dhan = dhanhq(context)
-
-        logger.info("✅ Dhan SDK initialized successfully")
+        logger.info(
+            "✅ Dhan SDK initialized successfully"
+        )
 
     except Exception:
-        logger.exception("❌ Failed to initialize Dhan client")
+
+        logger.exception(
+            "❌ Failed to initialize Dhan client"
+        )
+
         raise
 
     # --------------------------------
-    # MONGO
+    # MONGO COLLECTION
     # --------------------------------
     collection = get_market_data_collection()
 
+    logger.info(
+        "✅ Mongo collection initialized"
+    )
+
     # --------------------------------
-    # LOOP INDEXES
+    # PROCESS EACH INDEX
     # --------------------------------
     for sec_id in INDEX_SECURITY_IDS:
 
@@ -127,6 +152,10 @@ def fetch_and_store_option_chain():
             # --------------------------------
             # FETCH EXPIRY LIST
             # --------------------------------
+            logger.info(
+                f"📡 Fetching expiry list for {sec_id}"
+            )
+
             expiry_resp = dhan.expiry_list(
                 under_security_id=sec_id,
                 under_exchange_segment=EXCHANGE_SEGMENT
@@ -137,6 +166,14 @@ def fetch_and_store_option_chain():
                 f"expiry_list_{sec_id}"
             )
 
+            logger.info(
+                f"📦 expiry_resp final TYPE => "
+                f"{type(expiry_resp)}"
+            )
+
+            # --------------------------------
+            # EXTRACT EXPIRIES
+            # --------------------------------
             expiries = (
                 expiry_resp
                 .get("data", {})
@@ -144,13 +181,19 @@ def fetch_and_store_option_chain():
             )
 
             logger.info(
-                f"📅 Expiries found count={len(expiries)}"
+                f"📅 Expiries count => {len(expiries)}"
+            )
+
+            logger.info(
+                f"📅 Expiries => {expiries}"
             )
 
             if not expiries:
+
                 logger.warning(
-                    f"⚠️ No expiries found for index {sec_id}"
+                    f"⚠️ No expiries found for {sec_id}"
                 )
+
                 continue
 
             # --------------------------------
@@ -159,12 +202,17 @@ def fetch_and_store_option_chain():
             expiry = expiries[0]
 
             logger.info(
-                f"📅 Selected expiry={expiry}"
+                f"📅 Selected expiry => {expiry}"
             )
 
             # --------------------------------
             # FETCH OPTION CHAIN
             # --------------------------------
+            logger.info(
+                f"📡 Fetching option chain "
+                f"for {sec_id}"
+            )
+
             oc = dhan.option_chain(
                 under_security_id=sec_id,
                 under_exchange_segment=EXCHANGE_SEGMENT,
@@ -176,6 +224,14 @@ def fetch_and_store_option_chain():
                 f"option_chain_{sec_id}"
             )
 
+            logger.info(
+                f"📦 option_chain final TYPE => "
+                f"{type(oc)}"
+            )
+
+            # --------------------------------
+            # EXTRACT OPTION CHAIN
+            # --------------------------------
             oc_data = (
                 oc
                 .get("data", {})
@@ -183,33 +239,54 @@ def fetch_and_store_option_chain():
             )
 
             logger.info(
-                f"📊 option_chain keys count="
+                f"📊 option_chain strikes count => "
                 f"{len(oc_data.keys()) if isinstance(oc_data, dict) else 0}"
             )
 
-            if not oc_data:
-                logger.warning(
-                    f"⚠️ Empty option chain for index {sec_id}"
+            # --------------------------------
+            # PRINT SAMPLE STRIKES
+            # --------------------------------
+            try:
+
+                strike_keys = list(oc_data.keys())[:10]
+
+                logger.info(
+                    f"📊 Sample strikes => {strike_keys}"
                 )
+
+            except Exception:
+                logger.warning(
+                    "⚠️ Failed printing strike sample"
+                )
+
+            if not oc_data:
+
+                logger.warning(
+                    f"⚠️ Empty option chain for {sec_id}"
+                )
+
                 continue
 
             # --------------------------------
-            # DELETE OLD SNAPSHOT
+            # DELETE OLD SNAPSHOTS
             # --------------------------------
+            logger.info(
+                f"🗑️ Deleting old snapshots "
+                f"for index={sec_id}, expiry={expiry}"
+            )
+
             delete_result = collection.delete_many({
                 "index_security_id": sec_id,
                 "expiry": expiry
             })
 
             logger.info(
-                f"🗑️ Deleted "
-                f"{delete_result.deleted_count} "
-                f"old records "
-                f"(index={sec_id}, expiry={expiry})"
+                f"🗑️ Deleted count => "
+                f"{delete_result.deleted_count}"
             )
 
             # --------------------------------
-            # INSERT NEW SNAPSHOT
+            # CREATE PAYLOAD
             # --------------------------------
             payload = {
                 "index_security_id": sec_id,
@@ -218,21 +295,33 @@ def fetch_and_store_option_chain():
                 "option_chain": oc_data
             }
 
+            logger.info(
+                "📦 Preparing Mongo payload"
+            )
+
+            # --------------------------------
+            # INSERT SNAPSHOT
+            # --------------------------------
             result = collection.insert_one(payload)
 
             logger.info(
                 f"✅ Stored option chain snapshot "
-                f"(index={sec_id}, expiry={expiry}) "
+                f"index={sec_id} "
+                f"expiry={expiry} "
                 f"_id={result.inserted_id}"
             )
 
         except Exception:
+
             logger.exception(
                 f"❌ Failed processing index {sec_id}"
             )
+
             continue
 
-    logger.info("✅ Index option chain fetch job completed")
+    logger.info(
+        "✅ Index option chain fetch job completed"
+    )
 
 
 # ------------------------------------
