@@ -41,10 +41,18 @@ def parse_response(resp, label="response"):
     # PRINT SAMPLE RESPONSE
     # --------------------------------
     try:
+
         sample = str(resp)[:2000]
-        logger.info(f"📦 {label} SAMPLE => {sample}")
+
+        logger.info(
+            f"📦 {label} SAMPLE => {sample}"
+        )
+
     except Exception:
-        logger.warning(f"⚠️ Failed printing {label} sample")
+
+        logger.warning(
+            f"⚠️ Failed printing {label} sample"
+        )
 
     # --------------------------------
     # HANDLE STRING RESPONSE
@@ -87,7 +95,9 @@ def parse_response(resp, label="response"):
 # ------------------------------------
 def fetch_and_store_option_chain():
 
-    logger.info("🚀 Starting index option chain fetch job")
+    logger.info(
+        "🚀 Starting index option chain fetch job"
+    )
 
     # --------------------------------
     # LOAD DHAN CREDS
@@ -96,7 +106,9 @@ def fetch_and_store_option_chain():
 
     if not creds:
 
-        logger.error("❌ No valid Dhan credentials found")
+        logger.error(
+            "❌ No valid Dhan credentials found"
+        )
 
         raise RuntimeError(
             "No valid Dhan credentials"
@@ -136,6 +148,20 @@ def fetch_and_store_option_chain():
 
     logger.info(
         "✅ Mongo collection initialized"
+    )
+
+    # --------------------------------
+    # CLEAR OLD COLLECTION DATA
+    # --------------------------------
+    logger.info(
+        "🗑️ Clearing full option chain collection"
+    )
+
+    delete_result = collection.delete_many({})
+
+    logger.info(
+        f"🗑️ Total deleted documents => "
+        f"{delete_result.deleted_count}"
     )
 
     # --------------------------------
@@ -181,7 +207,8 @@ def fetch_and_store_option_chain():
             )
 
             logger.info(
-                f"📅 Expiries count => {len(expiries)}"
+                f"📅 Expiries count => "
+                f"{len(expiries)}"
             )
 
             logger.info(
@@ -248,13 +275,17 @@ def fetch_and_store_option_chain():
             # --------------------------------
             try:
 
-                strike_keys = list(oc_data.keys())[:10]
+                strike_keys = list(
+                    oc_data.keys()
+                )[:10]
 
                 logger.info(
-                    f"📊 Sample strikes => {strike_keys}"
+                    f"📊 Sample strikes => "
+                    f"{strike_keys}"
                 )
 
             except Exception:
+
                 logger.warning(
                     "⚠️ Failed printing strike sample"
                 )
@@ -268,30 +299,14 @@ def fetch_and_store_option_chain():
                 continue
 
             # --------------------------------
-            # DELETE OLD SNAPSHOTS
-            # --------------------------------
-            logger.info(
-                f"🗑️ Deleting old snapshots "
-                f"for index={sec_id}, expiry={expiry}"
-            )
-
-            delete_result = collection.delete_many({
-                "index_security_id": sec_id,
-                "expiry": expiry
-            })
-
-            logger.info(
-                f"🗑️ Deleted count => "
-                f"{delete_result.deleted_count}"
-            )
-
-            # --------------------------------
             # CREATE PAYLOAD
             # --------------------------------
             payload = {
                 "index_security_id": sec_id,
                 "expiry": expiry,
-                "fetched_at": datetime.now(timezone.utc),
+                "fetched_at": datetime.now(
+                    timezone.utc
+                ),
                 "option_chain": oc_data
             }
 
@@ -302,7 +317,9 @@ def fetch_and_store_option_chain():
             # --------------------------------
             # INSERT SNAPSHOT
             # --------------------------------
-            result = collection.insert_one(payload)
+            result = collection.insert_one(
+                payload
+            )
 
             logger.info(
                 f"✅ Stored option chain snapshot "
@@ -314,7 +331,8 @@ def fetch_and_store_option_chain():
         except Exception:
 
             logger.exception(
-                f"❌ Failed processing index {sec_id}"
+                f"❌ Failed processing index "
+                f"{sec_id}"
             )
 
             continue
