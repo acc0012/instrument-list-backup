@@ -10,7 +10,7 @@ on:
   schedule:
     - cron: "30 23 * * *"
 
-  workflow_dispatch:
+  workflow_dispatch: 
 
 jobs:
   fetch:
