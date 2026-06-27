@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - fetch_index_option_chain.py   # runs only if this file changes
-      - requirements.txt              # optional: also run if deps change
+      - requirements.txt   
+      - upstox_sync.py           # optional: also run if deps change
 
   schedule:
     - cron: "30 23 * * *"
@@ -38,4 +39,3 @@ jobs:
           AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
           AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
 
-          
