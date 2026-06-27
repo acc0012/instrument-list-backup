@@ -110,7 +110,7 @@ def upload_to_mongodb(document):
 
 
 def main():
-    try:
+    try: 
         download_file()
 
         extract_file()
