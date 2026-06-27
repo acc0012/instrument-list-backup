@@ -30,8 +30,8 @@ def get_mongo_collection():
     """Create MongoDB collection from GitHub Actions environment variables."""
 
     mongo_uri = os.environ["AUTH_MONGO_URI"]
-    mongo_db = "UPSTOX_" + os.environ["AUTH_MONGO_DB"]
-    mongo_collection = os.environ["AUTH_MONGO_COLLECTION"]
+    mongo_db = "UPSTOX_INSTRUMENTS"   
+    mongo_collection = 'latest_instruments'
 
     client = MongoClient(mongo_uri)
 
