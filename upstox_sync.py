@@ -112,7 +112,7 @@ def upload_to_mongodb(document):
 def main():
     try: 
         download_file()
-
+ 
         extract_file()
 
         data = load_json()
