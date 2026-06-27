@@ -24,8 +24,18 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: python fetch_index_option_chain.py
+      - name: Fetch Index Option Chain
+        run: python fetch_index_option_chain.py
         env:
           AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
           AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
           AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
+
+      - name: Sync Upstox Instruments
+        run: python upstox_sync.py
+        env:
+          AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
+          AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
+          AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
+
+          
