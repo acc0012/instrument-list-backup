@@ -156,7 +156,7 @@ def filter_data(data):
         "total_strikes": len(cleaned),
         "data": cleaned,
     }
-
+ 
 
 def upload_to_mongodb(document):
     collection = get_mongo_collection()
