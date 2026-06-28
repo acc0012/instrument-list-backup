@@ -30,8 +30,8 @@ def get_mongo_collection():
     """Create MongoDB collection from GitHub Actions environment variables."""
 
     mongo_uri = os.environ["AUTH_MONGO_URI"]
-    mongo_db = "UPSTOX_INSTRUMENTS"   
-    mongo_collection = 'latest_instruments'
+    mongo_db = "UPSTOX_INSTRUMENTS"
+    mongo_collection = "latest_instruments"
 
     client = MongoClient(mongo_uri)
 
@@ -70,6 +70,29 @@ def load_json():
 
 
 def filter_data(data):
+    """
+    Filters the downloaded Upstox instrument master to only the
+    nearest-expiry NIFTY option contracts and restructures them
+    into a strike-wise lookup dictionary.
+
+    Final Structure:
+
+    {
+        "23850": {
+            "ce": {...},
+            "pe": {...}
+        },
+        "23900": {
+            "ce": {...},
+            "pe": {...}
+        }
+    }
+    """
+
+    # ------------------------------------------------------
+    # Filter only NIFTY F&O contracts
+    # ------------------------------------------------------
+
     filtered = [
         item
         for item in data
@@ -79,11 +102,50 @@ def filter_data(data):
     if not filtered:
         raise Exception("No NIFTY contracts found.")
 
+    # ------------------------------------------------------
+    # Pick nearest expiry
+    # ------------------------------------------------------
+
     nearest_expiry = min(item["expiry"] for item in filtered)
 
     nearest = [item for item in filtered if item["expiry"] == nearest_expiry]
 
     expiry = datetime.fromtimestamp(nearest_expiry / 1000).strftime("%Y-%m-%d")
+
+    # ------------------------------------------------------
+    # Build strike-wise lookup
+    # ------------------------------------------------------
+
+    grouped = {}
+
+    for item in nearest:
+
+        strike = str(int(item["strike_price"]))
+
+        option_type = item["instrument_type"].lower()
+
+        if strike not in grouped:
+            grouped[strike] = {
+                "ce": None,
+                "pe": None,
+            }
+
+        grouped[strike][option_type] = item
+
+    # ------------------------------------------------------
+    # Remove incomplete strikes (safety)
+    # ------------------------------------------------------
+
+    cleaned = {}
+
+    for strike, contracts in grouped.items():
+
+        if contracts["ce"] and contracts["pe"]:
+            cleaned[strike] = contracts
+
+    # ------------------------------------------------------
+    # Final Mongo document
+    # ------------------------------------------------------
 
     return {
         "expiry": expiry,
@@ -91,7 +153,8 @@ def filter_data(data):
             "%Y-%m-%d %I:%M:%S %p IST"
         ),
         "total_records": len(nearest),
-        "data": nearest,
+        "total_strikes": len(cleaned),
+        "data": cleaned,
     }
 
 
@@ -110,9 +173,9 @@ def upload_to_mongodb(document):
 
 
 def main():
-    try: 
+    try:
         download_file()
-  
+
         extract_file()
 
         data = load_json()
