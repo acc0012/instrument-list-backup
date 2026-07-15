@@ -8,7 +8,7 @@ on:
       - upstox_sync.py           # optional: also run if deps change
 
   schedule:
-    - cron: "30 23 * * *"
+    - cron: "0 3 * * *"
 
   workflow_dispatch: 
 
