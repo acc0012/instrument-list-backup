@@ -12,25 +12,27 @@ logger = get_logger("data_fetcher")
 
 api_version = "2.0"
 
-# ==========================================================
-# Response Folder
-# ==========================================================
-
 RESPONSE_DIR = Path("responses")
 RESPONSE_DIR.mkdir(exist_ok=True)
 
 
-def get_last_market_days(days=2):
+def get_last_market_days(days=2, start_from_today=True):
     """
-    Calculate last N market days excluding weekends.
+    Calculate last N market days.
+    If start_from_today is True, includes current date.
+    If False, starts from yesterday (the last completed market day).
     """
     market_days = []
+    # Start checking from today, or yesterday if we want completed days only
     current_date = datetime.now()
+    if not start_from_today:
+        current_date -= timedelta(days=1)
 
     while len(market_days) < days:
-        current_date -= timedelta(days=1)
+        # Check if weekday (Mon=0, Sun=6)
         if current_date.weekday() < 5:
             market_days.append(current_date.strftime("%Y-%m-%d"))
+        current_date -= timedelta(days=1)
 
     return market_days
 
@@ -41,12 +43,6 @@ def fetch_candles(
     include_intraday=False,
     save_response=settings.SAVE_RES,
 ):
-    """
-    Fetches market data. 
-    If include_intraday=True: Fetches today + 2 historical days.
-    If include_intraday=False: Fetches 3 historical days.
-    """
-
     token = get_access_token()
     if not token:
         logger.error("Access token not found.")
@@ -62,15 +58,12 @@ def fetch_candles(
     historical_candles = []
 
     # ======================================================
-    # Determine days based on flag
+    # Logic:
+    # If include_intraday=True: Fetch Today + 2 Prev Days (Total 3)
+    # If include_intraday=False: Fetch 3 Completed Prev Days
     # ======================================================
-    # If intraday is included, we fetch today + 2 historical days.
-    # Otherwise, we fetch 3 historical days to cover the same range.
     historical_days_count = 2 if include_intraday else 3
 
-    # ======================================================
-    # Intraday (Conditional)
-    # ======================================================
     if include_intraday:
         try:
             logger.info("Fetching intraday data for %s", instrument_key)
@@ -81,12 +74,13 @@ def fetch_candles(
             if response.data and response.data.candles:
                 intraday_candles.extend(response.data.candles)
         except ApiException as exc:
-            logger.error("Intraday API Error : %s", exc)
+            logger.error("Intraday API Error: %s", exc)
 
-    # ======================================================
-    # Historical
-    # ======================================================
-    market_days = get_last_market_days(historical_days_count)
+    # Fetch historical based on whether we include today or not
+    market_days = get_last_market_days(
+        days=historical_days_count, start_from_today=include_intraday
+    )
+
     for day in market_days:
         try:
             logger.info("Fetching historical data for %s (%s)", instrument_key, day)
@@ -99,53 +93,32 @@ def fetch_candles(
         except ApiException as exc:
             logger.error("Historical API Error (%s): %s", day, exc)
 
-    # ======================================================
-    # Merge & Sort
-    # ======================================================
     merged_candles = intraday_candles + historical_candles
     if merged_candles:
         merged_candles.sort(key=lambda x: x[0])
 
-    # ======================================================
-    # Summary
-    # ======================================================
     trading_dates = sorted({candle[0][:10] for candle in merged_candles})
     summary = {
         "instrument_key": instrument_key,
         "interval": interval,
         "include_intraday": include_intraday,
         "generated_at": datetime.now().isoformat(),
-        "historical_days_requested": len(market_days),
-        "total_api_calls": (1 if include_intraday else 0) + len(market_days),
-        "intraday_candles": len(intraday_candles),
-        "historical_candles": len(historical_candles),
         "total_candles": len(merged_candles),
-        "trading_days": len(trading_dates),
         "trading_dates": trading_dates,
         "start_candle": (merged_candles[0][0] if merged_candles else None),
         "end_candle": (merged_candles[-1][0] if merged_candles else None),
     }
 
-    result = {
-        "summary": summary,
-        "merged_candles": merged_candles,
-        "raw_responses": {
-            "intraday": intraday_response,
-            "historical": historical_responses,
-        },
-    }
+    result = {"summary": summary, "merged_candles": merged_candles}
 
-    # ======================================================
-    # Save
-    # ======================================================
     if save_response:
-        filename = RESPONSE_DIR / f"{instrument_key.replace('|','_')}.json"
+        # Use suffix to differentiate between "live" files and "historical" files
+        suffix = "intraday" if include_intraday else "historical"
+        clean_key = instrument_key.replace("|", "_")
+        filename = RESPONSE_DIR / f"{clean_key}_{suffix}.json"
+
         with open(filename, "w", encoding="utf-8") as fp:
             json.dump(result, fp, indent=4, ensure_ascii=False)
-        logger.info("Saved merged response -> %s", filename)
-
-    if merged_candles:
-        logger.info("Fetched %s candles | %s -> %s", 
-                    summary["total_candles"], summary["start_candle"], summary["end_candle"])
+        logger.info("Saved result to %s", filename)
 
     return result
