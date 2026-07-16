@@ -25,141 +25,98 @@ def get_last_market_days(days=2):
     Calculate last N market days excluding weekends.
     """
     market_days = []
-
     current_date = datetime.now()
 
     while len(market_days) < days:
         current_date -= timedelta(days=1)
-
         if current_date.weekday() < 5:
             market_days.append(current_date.strftime("%Y-%m-%d"))
 
     return market_days
 
 
-def fetch_historical_candles(
+def fetch_candles(
     instrument_key,
     interval="1minute",
+    include_intraday=False,
     save_response=settings.SAVE_RES,
 ):
     """
-    Fetch:
-        - Today's intraday candles
-        - Previous market day candles
-
-    Returns:
-        {
-            summary,
-            merged_candles,
-            raw_responses
-        }
+    Fetches market data. 
+    If include_intraday=True: Fetches today + 2 historical days.
+    If include_intraday=False: Fetches 3 historical days.
     """
 
     token = get_access_token()
-
     if not token:
         logger.error("Access token not found.")
         return None
 
     configuration = upstox_client.Configuration()
     configuration.access_token = token
-
     api_instance = upstox_client.HistoryApi(upstox_client.ApiClient(configuration))
 
     intraday_response = None
     historical_responses = {}
-
     intraday_candles = []
     historical_candles = []
 
     # ======================================================
-    # Intraday
+    # Determine days based on flag
     # ======================================================
+    # If intraday is included, we fetch today + 2 historical days.
+    # Otherwise, we fetch 3 historical days to cover the same range.
+    historical_days_count = 2 if include_intraday else 3
 
-    try:
-
-        logger.info(
-            "Fetching intraday data for %s",
-            instrument_key,
-        )
-
-        response = api_instance.get_intra_day_candle_data(
-            instrument_key,
-            interval,
-            api_version,
-        )
-
-        intraday_response = response.to_dict()
-
-        if response.data and response.data.candles:
-            intraday_candles.extend(response.data.candles)
-
-    except ApiException as exc:
-
-        logger.error(
-            "Intraday API Error : %s",
-            exc,
-        )
+    # ======================================================
+    # Intraday (Conditional)
+    # ======================================================
+    if include_intraday:
+        try:
+            logger.info("Fetching intraday data for %s", instrument_key)
+            response = api_instance.get_intra_day_candle_data(
+                instrument_key, interval, api_version
+            )
+            intraday_response = response.to_dict()
+            if response.data and response.data.candles:
+                intraday_candles.extend(response.data.candles)
+        except ApiException as exc:
+            logger.error("Intraday API Error : %s", exc)
 
     # ======================================================
     # Historical
     # ======================================================
-
-    market_days = get_last_market_days(2)
-
+    market_days = get_last_market_days(historical_days_count)
     for day in market_days:
-
         try:
-
-            logger.info(
-                "Fetching historical data for %s (%s)",
-                instrument_key,
-                day,
-            )
-
+            logger.info("Fetching historical data for %s (%s)", instrument_key, day)
             response = api_instance.get_historical_candle_data1(
-                instrument_key,
-                interval,
-                day,
-                day,
-                api_version,
+                instrument_key, interval, day, day, api_version
             )
-
             historical_responses[day] = response.to_dict()
-
             if response.data and response.data.candles:
-
                 historical_candles.extend(response.data.candles)
-
         except ApiException as exc:
-
-            logger.error(
-                "Historical API Error (%s): %s",
-                day,
-                exc,
-            )
+            logger.error("Historical API Error (%s): %s", day, exc)
 
     # ======================================================
-    # Merge
+    # Merge & Sort
     # ======================================================
-
     merged_candles = intraday_candles + historical_candles
-
-    # oldest -> newest
-    merged_candles.sort(key=lambda x: x[0])
+    if merged_candles:
+        merged_candles.sort(key=lambda x: x[0])
 
     # ======================================================
     # Summary
     # ======================================================
-
     trading_dates = sorted({candle[0][:10] for candle in merged_candles})
-
     summary = {
         "instrument_key": instrument_key,
         "interval": interval,
+        "include_intraday": include_intraday,
         "generated_at": datetime.now().isoformat(),
         "historical_days_requested": len(market_days),
-        "total_api_calls": 1 + len(market_days),
+        "total_api_calls": (1 if include_intraday else 0) + len(market_days),
         "intraday_candles": len(intraday_candles),
         "historical_candles": len(historical_candles),
         "total_candles": len(merged_candles),
@@ -181,34 +138,14 @@ def fetch_historical_candles(
     # ======================================================
     # Save
     # ======================================================
-
     if save_response:
-
         filename = RESPONSE_DIR / f"{instrument_key.replace('|','_')}.json"
+        with open(filename, "w", encoding="utf-8") as fp:
+            json.dump(result, fp, indent=4, ensure_ascii=False)
+        logger.info("Saved merged response -> %s", filename)
 
-        with open(
-            filename,
-            "w",
-            encoding="utf-8",
-        ) as fp:
-
-            json.dump(
-                result,
-                fp,
-                indent=4,
-                ensure_ascii=False,
-            )
-
-        logger.info(
-            "Saved merged response -> %s",
-            filename,
-        )
-
-    logger.info(
-        "Fetched %s candles | %s -> %s",
-        summary["total_candles"],
-        summary["start_candle"],
-        summary["end_candle"],
-    )
+    if merged_candles:
+        logger.info("Fetched %s candles | %s -> %s", 
+                    summary["total_candles"], summary["start_candle"], summary["end_candle"])
 
     return result

@@ -14,7 +14,7 @@ from app.db.mongo_client import (
     ema_signal_testing_collection,
 )
 from app.services.api_client import fetch_instrument_range
-from app.services.data_fetcher import fetch_historical_candles
+from app.services.data_fetcher import fetch_candles
 from app.services.ema_calculator import calculate_ema_cross
 from app.services.token_service import (
     load_access_token,
@@ -270,7 +270,7 @@ def run_daily_ema_analysis(
 
             try:
                 # Fetch historical candles
-                response = fetch_historical_candles(
+                response = fetch_candles(
                     instrument_key=instrument_key,
                     interval="1minute",
                     save_response=settings.SAVE_RES,
