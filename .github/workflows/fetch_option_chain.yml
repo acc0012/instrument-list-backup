@@ -1,6 +1,6 @@
 name: Fetch Index Option Chains
  
-on: 
+on:
   push:
     paths:
       # - "dhan_folder/**"
