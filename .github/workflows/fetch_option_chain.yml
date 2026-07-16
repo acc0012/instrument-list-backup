@@ -2,7 +2,7 @@ name: Fetch Index Option Chains
   
 on:
   push:
-    paths:
+    paths: 
       # - "dhan_folder/**"
       - "upstox_folder/**"
       - "requirements.txt"

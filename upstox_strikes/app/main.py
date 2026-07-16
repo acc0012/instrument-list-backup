@@ -122,11 +122,11 @@ def compute_ema_cross_series(
     return events
 
 
-def filter_crosses_today(
-    events: List[Dict[str, Any]], today_ist: datetime
+def filter_crosses_by_date(
+    events: List[Dict[str, Any]], target_date: datetime
 ) -> List[Dict[str, Any]]:
     """Filter crossovers that occurred on the given date (IST)."""
-    today_date = today_ist.date()
+    target_date_only = target_date.date()
     filtered = []
     for ev in events:
         ts = ev["timestamp"]
@@ -138,19 +138,19 @@ def filter_crosses_today(
             dt = dt.replace(tzinfo=IST)
         else:
             dt = dt.astimezone(IST)
-        if dt.date() == today_date:
+        if dt.date() == target_date_only:
             ev_copy = ev.copy()
             ev_copy["timestamp"] = dt.isoformat()
             filtered.append(ev_copy)
     return filtered
 
 
-def filter_candles_today(
-    candles: List[Dict[str, Any]], today_ist: datetime
+def filter_candles_by_date(
+    candles: List[Dict[str, Any]], target_date: datetime
 ) -> List[Dict[str, Any]]:
-    """Extract candles that belong to today's date (IST)."""
-    today_date = today_ist.date()
-    today_candles = []
+    """Extract candles that belong to the given date (IST)."""
+    target_date_only = target_date.date()
+    result = []
     for c in candles:
         ts = c["timestamp"]
         if isinstance(ts, str):
@@ -161,11 +161,11 @@ def filter_candles_today(
             dt = dt.replace(tzinfo=IST)
         else:
             dt = dt.astimezone(IST)
-        if dt.date() == today_date:
+        if dt.date() == target_date_only:
             c_copy = c.copy()
             c_copy["timestamp"] = dt.isoformat()
-            today_candles.append(c_copy)
-    return today_candles
+            result.append(c_copy)
+    return result
 
 
 def send_telegram_message(message: str) -> None:
@@ -213,11 +213,53 @@ def prune_daily_entries(collection, filter_query, keep_count=DAYS_TO_KEEP):
         )
 
 
+def get_target_date(
+    summary: Dict, include_today: bool, default_today: datetime
+) -> datetime:
+    """
+    Determine the target date for filtering and storing daily data.
+    If include_today is True, return default_today.
+    Otherwise, use the last date from trading_dates in the summary, if available.
+    Falls back to default_today if trading_dates is missing or empty.
+    """
+    if include_today:
+        return default_today
+
+    trading_dates = summary.get("trading_dates")
+    if trading_dates and isinstance(trading_dates, list) and len(trading_dates) > 0:
+        last_date_str = trading_dates[-1]
+        try:
+            # Parse as date and attach IST timezone (midnight)
+            target_date = datetime.strptime(last_date_str, "%Y-%m-%d").replace(
+                tzinfo=IST
+            )
+            return target_date
+        except ValueError:
+            logger.warning(
+                "Could not parse trading date '%s', falling back to today.",
+                last_date_str,
+            )
+            return default_today
+    else:
+        logger.warning("No trading_dates found in summary, falling back to today.")
+        return default_today
+
+
 def run_daily_ema_analysis(
     test_run: bool = False,
     test_strikes: list[str] | None = None,
+    include_today: bool = False,
 ):
-    logger.info("Starting EMA analysis task...")
+    """
+    Run EMA analysis and store daily results.
+
+    Args:
+        test_run: If True, use testing collection and optionally filter by test_strikes.
+        test_strikes: List of strike prices to include when test_run is True.
+        include_today: If True, use the current calendar day (IST) as the target date.
+                       If False, use the last trading day from the fetched data.
+    """
+    logger.info("Starting EMA analysis task... (include_today=%s)", include_today)
 
     # Load token
     load_access_token()
@@ -251,7 +293,6 @@ def run_daily_ema_analysis(
 
     now_utc = datetime.now(timezone.utc)
     today_ist = now_utc.astimezone(IST)
-    today_str = today_ist.strftime("%Y-%m-%d")
 
     error_count = 0
     processed_count = 0
@@ -302,6 +343,10 @@ def run_daily_ema_analysis(
                     summary.get("end_candle"),
                 )
 
+                # Determine target date
+                target_date = get_target_date(summary, include_today, today_ist)
+                target_date_str = target_date.strftime("%Y-%m-%d")
+
                 # Compute latest EMA cross
                 result = calculate_ema_cross(
                     candles=candles,
@@ -313,12 +358,12 @@ def run_daily_ema_analysis(
                     error_count += 1
                     continue
 
-                # Compute all crossovers and filter today's
+                # Compute all crossovers and filter by target date
                 all_crosses = compute_ema_cross_series(
                     candles, short_window=9, long_window=21
                 )
-                today_crosses = filter_crosses_today(all_crosses, today_ist)
-                today_candles = filter_candles_today(candles, today_ist)
+                target_crosses = filter_crosses_by_date(all_crosses, target_date)
+                target_candles = filter_candles_by_date(candles, target_date)
 
                 # Log
                 if result["signal"]:
@@ -326,14 +371,15 @@ def run_daily_ema_analysis(
                 else:
                     logger.info("No latest EMA crossover for %s", trading_symbol)
 
-                if today_crosses:
+                if target_crosses:
                     logger.info(
-                        "Found %d EMA crossover(s) today for %s",
-                        len(today_crosses),
+                        "Found %d EMA crossover(s) on %s for %s",
+                        len(target_crosses),
+                        target_date_str,
                         trading_symbol,
                     )
 
-                # Build the daily entry
+                # Build the daily entry for the target date
                 daily_entry = {
                     "instrument_key": instrument_key,
                     "trading_symbol": trading_symbol,
@@ -350,8 +396,8 @@ def run_daily_ema_analysis(
                     "end_candle": summary.get("end_candle"),
                     "trading_days": summary.get("trading_days"),
                     "trading_dates": summary.get("trading_dates"),
-                    "crosses_today": today_crosses,
-                    "today_candles": today_candles,
+                    "crosses_today": target_crosses,  # crosses on target date
+                    "today_candles": target_candles,  # candles on target date
                 }
 
                 # Upsert the strike document
@@ -364,7 +410,7 @@ def run_daily_ema_analysis(
                         "instrument_key": instrument_key,
                         "trading_symbol": trading_symbol,
                         "candles": candles,
-                        f"daily.{today_str}": daily_entry,
+                        f"daily.{target_date_str}": daily_entry,
                         "last_updated": datetime.now(timezone.utc),
                     }
                 }
@@ -378,7 +424,7 @@ def run_daily_ema_analysis(
                     "Updated document for %s %s (daily key: %s)",
                     strike,
                     instrument_type.upper(),
-                    today_str,
+                    target_date_str,
                 )
 
             except Exception as e:
@@ -407,9 +453,12 @@ if __name__ == "__main__":
     try:
         TEST_RUN = settings.TEST_RUN
         TEST_STRIKES = ["23800", "23950"]
+        # Read INCLUDE_TODAY from settings, default to True
+        INCLUDE_TODAY =  False
         run_daily_ema_analysis(
             test_run=TEST_RUN,
             test_strikes=TEST_STRIKES,
+            include_today=INCLUDE_TODAY,
         )
     except Exception as exc:
         logger.exception("Critical error during EMA task: %s", exc)
