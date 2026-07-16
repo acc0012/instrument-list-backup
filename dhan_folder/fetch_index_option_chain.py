@@ -4,8 +4,8 @@ import logging
 from datetime import datetime, timezone
 
 from dhanhq import dhanhq
-from dhan_auth import load_valid_dhan_credentials
-from mongo_clients import get_market_data_collection
+from dhan_folder.dhan_auth import load_valid_dhan_credentials
+from dhan_folder.mongo_clients import get_market_data_collection
 
 
 # ------------------------------------
