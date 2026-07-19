@@ -256,11 +256,11 @@ def run_daily_ema_analysis(
     """
     logger.info("Starting EMA analysis task... (include_today=%s)", include_today)
 
-    # Load token
-    load_access_token()
-    if not get_access_token():
-        logger.error("Unable to load Upstox access token.")
-        return
+    # # Load token
+    # load_access_token()
+    # if not get_access_token():
+    #     logger.error("Unable to load Upstox access token.")
+    #     return
 
     # Fetch instruments
     instruments_data = fetch_instrument_range(
