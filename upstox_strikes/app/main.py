@@ -398,6 +398,8 @@ def run_daily_ema_analysis(
                         "trading_symbol": trading_symbol,
                         f"daily.{target_date_str}": daily_entry,
                         "last_updated": datetime.now(timezone.utc),
+                        "latest_crosses": target_crosses,  # NEW: top-level crosses
+                        "latest_crosses_date": target_date_str,  # NEW: corresponding date
                     },
                     "$unset": {
                         "candles": "",  # remove the heavy candle array
