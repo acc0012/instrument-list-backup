@@ -62,8 +62,8 @@ def fetch_candles(
     # If include_intraday=True: Fetch Today + 2 Prev Days (Total 3)
     # If include_intraday=False: Fetch 3 Completed Prev Days
     # ======================================================
-    historical_days_count = 2 if include_intraday else 3
-
+    historical_days_count = 6 if include_intraday else 7
+    
     if include_intraday:
         try:
             logger.info("Fetching intraday data for %s", instrument_key)
