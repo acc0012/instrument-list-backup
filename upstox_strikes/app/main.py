@@ -149,6 +149,7 @@ def filter_candles_by_date(
     candles: List[Dict[str, Any]], target_date: datetime
 ) -> List[Dict[str, Any]]:
     """Extract candles that belong to the given date (IST)."""
+    # NOTE: This function is no longer used to store data, but kept for possible future use.
     target_date_only = target_date.date()
     result = []
     for c in candles:
@@ -251,13 +252,7 @@ def run_daily_ema_analysis(
     include_today: bool = False,
 ):
     """
-    Run EMA analysis and store daily results.
-
-    Args:
-        test_run: If True, use testing collection and optionally filter by test_strikes.
-        test_strikes: List of strike prices to include when test_run is True.
-        include_today: If True, use the current calendar day (IST) as the target date.
-                       If False, use the last trading day from the fetched data.
+    Run EMA analysis and store daily results (minimal data, no candle arrays).
     """
     logger.info("Starting EMA analysis task... (include_today=%s)", include_today)
 
@@ -347,7 +342,7 @@ def run_daily_ema_analysis(
                 target_date = get_target_date(summary, include_today, today_ist)
                 target_date_str = target_date.strftime("%Y-%m-%d")
 
-                # Compute latest EMA cross
+                # Compute latest EMA cross (only used to get last_price and signal status)
                 result = calculate_ema_cross(
                     candles=candles,
                     short_window=9,
@@ -363,7 +358,6 @@ def run_daily_ema_analysis(
                     candles, short_window=9, long_window=21
                 )
                 target_crosses = filter_crosses_by_date(all_crosses, target_date)
-                target_candles = filter_candles_by_date(candles, target_date)
 
                 # Log
                 if result["signal"]:
@@ -379,41 +373,39 @@ def run_daily_ema_analysis(
                         trading_symbol,
                     )
 
-                # Build the daily entry for the target date
+                # Build the daily entry – MINIMAL, no candles, no EMA fields
                 daily_entry = {
                     "instrument_key": instrument_key,
                     "trading_symbol": trading_symbol,
-                    "signal": result["signal"],
-                    "signal_status": (
-                        "CROSSOVER" if result["signal"] else "NO_CROSSOVER"
-                    ),
                     "last_price": result["last_price"],
-                    "ema_short": result["ema_short"],
-                    "ema_long": result["ema_long"],
-                    "candle_timestamp": result["timestamp"],
                     "total_candles": summary.get("total_candles"),
                     "start_candle": summary.get("start_candle"),
                     "end_candle": summary.get("end_candle"),
                     "trading_days": summary.get("trading_days"),
                     "trading_dates": summary.get("trading_dates"),
                     "crosses_today": target_crosses,  # crosses on target date
-                    "today_candles": target_candles,  # candles on target date
                 }
 
-                # Upsert the strike document
+                # Upsert the strike document – keep only minimal data
                 filter_query = {
                     "strike": strike,
                     "type": instrument_type.upper(),
                 }
+
                 update_data = {
                     "$set": {
                         "instrument_key": instrument_key,
                         "trading_symbol": trading_symbol,
-                        "candles": candles,
                         f"daily.{target_date_str}": daily_entry,
                         "last_updated": datetime.now(timezone.utc),
-                    }
+                    },
+                    "$unset": {
+                        "candles": "",  # remove the heavy candle array
+                    },
                 }
+
+                # Also remove any old 'today_candles' from daily entries if they exist
+                # (they will be overwritten by the new daily_entry)
                 target_collection.update_one(filter_query, update_data, upsert=True)
 
                 # Prune older daily entries (keep only last 4)
@@ -453,8 +445,7 @@ if __name__ == "__main__":
     try:
         TEST_RUN = settings.TEST_RUN
         TEST_STRIKES = ["23800", "23950"]
-        # Read INCLUDE_TODAY from settings, default to True
-        INCLUDE_TODAY =  False
+        INCLUDE_TODAY = False
         run_daily_ema_analysis(
             test_run=TEST_RUN,
             test_strikes=TEST_STRIKES,
