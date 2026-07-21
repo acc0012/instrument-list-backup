@@ -41,7 +41,7 @@ jobs:
       #     AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
       #     AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
       #     AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
-
+ 
       # -------------------------
       # Sync Upstox Instruments
       # -------------------------
