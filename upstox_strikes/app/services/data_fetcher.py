@@ -45,7 +45,7 @@ def fetch_candles(
 ):
     token = get_access_token()
     if not token:
-        msg = f"Access token not found. {len(token)}"
+        msg = f"Access token not found. {len(token)}" if token else "Access token not found or None."
         logger.error(msg)
         return None
 

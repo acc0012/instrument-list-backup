@@ -25,7 +25,18 @@ def get_access_token() -> str | None:
     """
     Retrieve the access token from the memory cache.
     """
-    return token_cache.upstox_access_token
+    logger.info("Loading Upstox access token from MongoDB...")
+
+        # Use the token_collection imported from app.db.mongo_client
+    doc = token_collection.find_one({"_id": "upstox_access_token"})
+    access_token = doc.get("access_token")
+
+    if not doc:
+        logger.warning("Upstox access token document not found in database.")
+        return
+
+        access_token = doc.get("access_token")
+    return access_token
 
 
 def load_access_token() -> None:
