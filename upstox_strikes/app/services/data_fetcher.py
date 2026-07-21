@@ -45,7 +45,8 @@ def fetch_candles(
 ):
     token = get_access_token()
     if not token:
-        logger.error("Access token not found.")
+        msg = f"Access token not found. {len(token)}"
+        logger.error(msg)
         return None
 
     configuration = upstox_client.Configuration()
