@@ -31,7 +31,7 @@ class Settings:
     # Telegram Configuration
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
+    TELE_FLAG = False # It is requiremetn here to not to load it from env secrets
     # API Configuration
     API_BASE_URL = os.getenv("API_BASE_URL")
 
