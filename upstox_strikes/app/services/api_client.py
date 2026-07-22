@@ -5,8 +5,8 @@ from app.core.logger import get_logger
 
 logger = get_logger("instrument_loader")
 
-client = MongoClient(settings.MONGO_URL)
-db = client[settings.MONGO_DB]
+client = MongoClient(settings.MONGO_URI)
+db = client[settings.UPSTOX_DB]
 collection = db["latest_instruments"]
 
 
