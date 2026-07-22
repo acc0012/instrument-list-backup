@@ -1,30 +1,45 @@
-import requests
+from pymongo import MongoClient
+
 from app.core.config import settings
 from app.core.logger import get_logger
 
-logger = get_logger("api_client")
+logger = get_logger("instrument_loader")
+
+client = MongoClient(settings.MONGO_URL)
+db = client[settings.MONGO_DB]
+collection = db["latest_instruments"]
 
 
-def fetch_instrument_range(min_strike: int = 23400, max_strike: int = 24600):
+def fetch_instrument_range(
+    min_strike: int = 23400,
+    max_strike: int = 24600,
+):
     """
-    Fetch the list of instruments from the existing FastAPI service.
+    Fetch instruments directly from MongoDB.
     """
-    url = f"{settings.API_BASE_URL}/api/v1/instruments/range"
-    params = {"min_strike": min_strike, "max_strike": max_strike}
 
     try:
-        logger.info(f"Fetching instruments from {url} with params {params}")
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
+        document = collection.find_one()
 
-        data = response.json()
-        if data.get("success"):
-            logger.info(f"Successfully fetched {data.get('count')} instruments.")
-            return data.get("data", {})
-        else:
-            logger.error("API returned success=False")
+        if not document:
+            logger.error("No instrument document found.")
             return {}
 
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error fetching instruments from API: {e}")
+        strikes = document.get("data", {})
+
+        filtered = {
+            strike: value
+            for strike, value in strikes.items()
+            if min_strike <= int(strike) <= max_strike
+        }
+
+        logger.info(
+            f"Loaded {len(filtered)} strikes from MongoDB "
+            f"(expiry={document.get('expiry')})"
+        )
+
+        return filtered
+
+    except Exception as e:
+        logger.exception(f"Failed to load instruments: {e}")
         raise

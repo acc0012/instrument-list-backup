@@ -41,16 +41,16 @@ jobs:
       #     AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
       #     AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
       #     AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
-    
-      # -------------------------
-      # Sync Upstox Instruments
-      # -------------------------
-      - name: Sync Upstox Instruments
-        run: python upstox_folder/upstox_sync.py
-        env:
-          AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
-          AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
-          AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
+     
+      # # -------------------------
+      # # Sync Upstox Instruments
+      # # -------------------------
+      # - name: Sync Upstox Instruments
+      #   run: python upstox_folder/upstox_sync.py
+      #   env:
+      #     AUTH_MONGO_URI: ${{ secrets.AUTH_MONGO_URI }}
+      #     AUTH_MONGO_DB: ${{ secrets.AUTH_MONGO_DB }}
+      #     AUTH_MONGO_COLLECTION: ${{ secrets.AUTH_MONGO_COLLECTION }}
  
       # -------------------------
       # Run Upstox Strikes
@@ -63,7 +63,7 @@ jobs:
           API_BASE_URL: ${{ secrets.API_BASE_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
+ 
           # Optional flags
           TEST_RUN: "False"
           SAVE_RES: "False"
