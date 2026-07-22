@@ -4,13 +4,13 @@ import gzip
 import shutil
 import requests
 from datetime import datetime
-from pymongo import MongoClient
 from zoneinfo import ZoneInfo
 
 DOWNLOAD_URL = "https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz"
 
 DOWNLOAD_FILE = "NSE.json.gz"
 EXTRACTED_FILE = "NSE.json"
+OUTPUT_FILE = "nifty_instruments.json"  # Local output file
 
 
 def cleanup():
@@ -21,16 +21,6 @@ def cleanup():
             os.remove(file)
             print(f"Deleted: {file}")
     print("Cleanup completed.")
-
-
-def get_mongo_collection():
-    """Create MongoDB collection from GitHub Actions environment variables."""
-    mongo_uri = os.environ["AUTH_MONGO_URI"]
-    mongo_db = "UPSTOX_APP"
-    mongo_collection = "latest_instruments"
-    client = MongoClient(mongo_uri)
-    db = client[mongo_db]
-    return db[mongo_collection]
 
 
 def download_file():
@@ -125,7 +115,7 @@ def filter_data(data):
     print(f"Complete strikes (both CE & PE): {len(cleaned)}")
 
     # ------------------------------------------------------
-    # Final Mongo document
+    # Final document structure
     # ------------------------------------------------------
     return {
         "expiry": expiry_date,
@@ -138,13 +128,12 @@ def filter_data(data):
     }
 
 
-def upload_to_mongodb(document):
-    collection = get_mongo_collection()
-    print("Deleting existing documents...")
-    collection.delete_many({})
-    print("Uploading latest document...")
-    collection.insert_one(document)
-    print("MongoDB upload completed.")
+def save_to_json(document):
+    """Save the document to a local JSON file."""
+    print(f"Saving to {OUTPUT_FILE}...")
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(document, f, indent=2, ensure_ascii=False)
+    print(f"File saved: {OUTPUT_FILE}")
 
 
 def main():
@@ -153,13 +142,14 @@ def main():
         extract_file()
         data = load_json()
         document = filter_data(data)
-        upload_to_mongodb(document)
+        save_to_json(document)
 
         print("--------------------------------")
         print("Completed Successfully")
         print(f"Expiry        : {document['expiry']}")
         print(f"Total Records : {document['total_records']}")
         print(f"Total Strikes : {document['total_strikes']}")
+        print(f"Output file   : {OUTPUT_FILE}")
         print("--------------------------------")
     finally:
         cleanup()
