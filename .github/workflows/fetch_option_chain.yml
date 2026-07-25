@@ -8,9 +8,9 @@ on:
       - "requirements.txt"
       - ".github/workflows/fetch_option_chain.yml"
 
-  # Every day at 04:00 IST (22:30 UTC previous day)
+  # Every day at 08:00 IST 
   schedule:
-    - cron: "30 22 * * *"
+    - cron: "30 2 * * *"
 
   workflow_dispatch:
 
